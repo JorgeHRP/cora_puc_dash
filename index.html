@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORA · PUC Goiás · Resultados do Projeto de IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a0e1a;
+    --card: #141c30;
+    --border: rgba(100,160,255,0.12);
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --purple: #8b5cf6;
+    --text: #e8edf8;
+    --muted: #7a8cb0;
+    --accent: #60a5fa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%;width:100%;overflow:hidden;background:var(--navy);color:var(--text);font-family:'DM Sans',sans-serif; }
+
+  .slides-container { position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden; }
+  .slides { display:flex;width:600vw;height:100vh;transition:transform 0.75s cubic-bezier(0.77,0,0.175,1);will-change:transform; }
+  .slide { width:100vw;height:100vh;flex-shrink:0;position:relative;overflow:hidden;display:flex;flex-direction:column;padding:52px 72px 44px; }
+
+  .nav {
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+    display:flex;align-items:center;gap:10px;z-index:999;
+    background:rgba(10,14,26,0.92);backdrop-filter:blur(12px);
+    padding:10px 20px;border-radius:100px;border:1px solid var(--border);
+  }
+  .dot { width:7px;height:7px;border-radius:50%;background:var(--muted);cursor:pointer;transition:all 0.3s; }
+  .dot.active { background:var(--accent);width:20px;border-radius:4px; }
+  .nav-btn { background:none;border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s; }
+  .nav-btn:hover { background:rgba(100,160,255,0.1);border-color:var(--accent); }
+
+  .slide-label { font-family:'Syne',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px; }
+  .slide-title { font-family:'Syne',sans-serif;font-size:clamp(24px,2.6vw,36px);font-weight:700;line-height:1.2; }
+  .slide-title span { background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+  .slide-header { margin-bottom:26px;position:relative;z-index:1; }
+  .slide-number { position:absolute;top:52px;right:72px;font-family:'Syne',sans-serif;font-size:12px;color:var(--muted);letter-spacing:2px;z-index:10; }
+  .bg-glow { position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0; }
+  .kbd-hint { position:fixed;top:18px;right:18px;font-size:11px;color:rgba(122,140,176,0.3);z-index:999;letter-spacing:1px; }
+
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  @keyframes barGrow { from{transform:scaleX(0)}to{transform:scaleX(1)} }
+
+  /* ── SLIDE 0 ── */
+  #slide-0 { justify-content:center;align-items:flex-start; }
+  #slide-0 .gl1 { width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%);top:-100px;right:-100px; }
+  #slide-0 .gl2 { width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,0.12) 0%,transparent 70%);bottom:0;left:200px; }
+  .cover-tag { display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border:1px solid rgba(59,130,246,0.4);border-radius:100px;font-size:11px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;font-family:'Syne',sans-serif;margin-bottom:26px;position:relative;z-index:1; }
+  .ctdot { width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite; }
+  .cover-title { font-family:'Syne',sans-serif;font-size:clamp(46px,5.2vw,78px);font-weight:800;line-height:1.0;margin-bottom:18px;position:relative;z-index:1; }
+  .cover-title .hl { background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+  .cover-sub { font-size:16px;color:var(--muted);font-weight:300;line-height:1.6;max-width:500px;margin-bottom:36px;position:relative;z-index:1; }
+  .cover-stats { display:flex;gap:36px;position:relative;z-index:1; }
+  .cs-num { font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--accent);line-height:1; }
+  .cs-lbl { font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px; }
+  .divider { width:1px;height:42px;background:var(--border);align-self:center; }
+
+  /* ── SLIDE 1 ── */
+  #slide-1 .bg-glow { width:500px;height:500px;background:radial-gradient(circle,rgba(139,92,246,0.1) 0%,transparent 70%);top:50%;right:-100px;transform:translateY(-50%); }
+  .kpi-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;position:relative;z-index:1; }
+  .kpi-card { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 18px;position:relative;overflow:hidden; }
+  .kpi-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px; }
+  .kpi-card.bl::before { background:linear-gradient(90deg,var(--blue),var(--cyan)); }
+  .kpi-card.gr::before { background:linear-gradient(90deg,var(--green),#34d399); }
+  .kpi-card.go::before { background:linear-gradient(90deg,var(--gold),#fcd34d); }
+  .kpi-card.pu::before { background:linear-gradient(90deg,var(--purple),#a78bfa); }
+  .kpi-icon { margin-bottom:10px; }
+  .kpi-val { font-family:'Syne',sans-serif;font-size:38px;font-weight:800;line-height:1;margin-bottom:3px; }
+  .kpi-card.bl .kpi-val { color:var(--accent); }
+  .kpi-card.gr .kpi-val { color:var(--green); }
+  .kpi-card.go .kpi-val { color:var(--gold); }
+  .kpi-card.pu .kpi-val { color:#a78bfa; }
+  .kpi-lbl { font-size:12px;color:var(--muted);margin-bottom:6px; }
+  .kpi-sub { font-size:10px;color:rgba(122,140,176,0.5); }
+  .charts-row { display:grid;grid-template-columns:1.4fr 1fr;gap:14px;position:relative;z-index:1; }
+  .chart-card { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px; }
+  .chart-title { font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:0.3px; }
+  .bar-chart { display:flex;flex-direction:column;gap:8px; }
+  .bar-row { display:flex;align-items:center;gap:9px; }
+  .bar-label { font-size:11px;color:var(--muted);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .bar-track { flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden; }
+  .bar-fill { height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));animation:barGrow 1s ease-out forwards;transform-origin:left; }
+  .bar-val { font-size:11px;color:var(--accent);font-family:'Syne',sans-serif;font-weight:600;width:20px;text-align:right; }
+  .fs { border-radius:7px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between; }
+  .f1 { background:rgba(59,130,246,0.2); }
+  .f2 { background:rgba(6,182,212,0.15); }
+  .f3 { background:rgba(16,185,129,0.15); }
+  .f4 { background:rgba(245,158,11,0.15); }
+
+  /* ── SLIDE 2 ── */
+  #slide-2 .bg-glow { width:700px;height:700px;background:radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%);bottom:-200px;left:-200px; }
+  .features-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:1;position:relative;z-index:1; }
+  .feature-card { background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 20px;display:flex;flex-direction:column;gap:10px;transition:border-color 0.3s; }
+  .feature-card:hover { border-color:rgba(59,130,246,0.4); }
+  .fi-wrap { width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .fi-bl { background:rgba(59,130,246,0.15); } .fi-cy { background:rgba(6,182,212,0.15); } .fi-gr { background:rgba(16,185,129,0.15); }
+  .fi-go { background:rgba(245,158,11,0.15); } .fi-pu { background:rgba(139,92,246,0.15); } .fi-pk { background:rgba(236,72,153,0.15); }
+  .feat-name { font-family:'Syne',sans-serif;font-size:14px;font-weight:700;line-height:1.3; }
+  .feat-desc { font-size:12px;color:var(--muted);line-height:1.55;flex:1; }
+  .feat-tag { display:inline-block;padding:3px 8px;border-radius:100px;font-size:10px;background:rgba(59,130,246,0.1);color:var(--accent);border:1px solid rgba(59,130,246,0.2);width:fit-content; }
+
+  /* ── SLIDE 3 — SCROLLABLE ── */
+  #slide-3 { overflow-y:auto; }
+  #slide-3::-webkit-scrollbar { width:3px; }
+  #slide-3::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1);border-radius:2px; }
+  .results-layout { display:grid;grid-template-columns:1fr 1fr;gap:16px;position:relative;z-index:1;padding-bottom:64px; }
+  .result-block { background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px; }
+  .result-block.feat { border-color:rgba(59,130,246,0.3);background:linear-gradient(135deg,rgba(59,130,246,0.05),var(--card)); }
+  .rb-title { font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px; }
+  .badge { padding:2px 7px;border-radius:5px;font-size:10px;letter-spacing:1px;text-transform:uppercase; }
+  .bg-gr { background:rgba(16,185,129,0.15);color:var(--green); }
+  .bg-bl { background:rgba(59,130,246,0.15);color:var(--accent); }
+  .m-row { display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border); }
+  .m-row:last-child { border-bottom:none; }
+  .m-name { font-size:12px;color:var(--muted); }
+  .m-val { font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text); }
+  .m-val.good { color:var(--green); } .m-val.acc { color:var(--accent); }
+  .fv { display:flex;flex-direction:column;gap:6px; }
+  .ins-list { display:flex;flex-direction:column;gap:8px; }
+  .ins-item { display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);line-height:1.5; }
+  .ins-dot { width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px; }
+
+  /* ── SLIDE 4 — WHATSAPP ── */
+  #slide-4 { flex-direction:row;gap:18px;align-items:stretch;padding:44px 48px 44px; }
+  #slide-4 .bg-glow { width:500px;height:500px;background:radial-gradient(circle,rgba(16,185,129,0.08) 0%,transparent 70%);top:-100px;right:-100px; }
+  .chat-panel { display:flex;flex-direction:column;flex:1;position:relative;z-index:1;min-width:0; }
+  .chat-sel-row { display:flex;gap:10px;margin-bottom:14px;flex-shrink:0; }
+  .chat-sel-btn { flex:1;padding:11px 14px;background:var(--card);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.3s;text-align:left;color:var(--text); }
+  .chat-sel-btn.active { border-color:var(--green);background:rgba(16,185,129,0.08); }
+  .csb-name { font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px; }
+  .csb-course { font-size:10px;color:var(--muted); }
+  .chat-phone { flex:1;min-height:0;background:#0d1117;border-radius:18px;border:2px solid rgba(255,255,255,0.06);overflow:hidden;display:flex;flex-direction:column;max-width:360px;margin:0 auto;width:100%;box-shadow:0 24px 56px rgba(0,0,0,0.5); }
+  .chat-hdr { background:#1a2535;padding:12px 16px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0; }
+  .chat-av { width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .chat-nm { font-family:'Syne',sans-serif;font-size:13px;font-weight:700; }
+  .chat-st { font-size:10px;color:var(--green); }
+  .chat-ondot { width:7px;height:7px;background:var(--green);border-radius:50%;margin-left:auto;animation:pulse 2s infinite; }
+  .chat-body { flex:1;min-height:0;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;background:#111827;scroll-behavior:smooth; }
+  .chat-body::-webkit-scrollbar { width:3px; }
+  .chat-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1);border-radius:2px; }
+  .msg { max-width:84%;padding:8px 11px;border-radius:11px;font-size:12px;line-height:1.5;word-break:break-word;overflow-wrap:break-word; }
+  .msg-h { background:#25304a;align-self:flex-end;border-bottom-right-radius:3px;color:#c8d8f8; }
+  .msg-a { background:#1a2535;align-self:flex-start;border-bottom-left-radius:3px;color:var(--text);border:1px solid rgba(255,255,255,0.05); }
+  .msg-time { font-size:9px;color:rgba(255,255,255,0.25);text-align:right;margin-top:3px; }
+  .msg-sndr { font-size:9px;color:var(--cyan);font-weight:600;margin-bottom:2px; }
+  .chat-meta { flex:0 0 250px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1;overflow-y:auto; }
+  .chat-meta::-webkit-scrollbar { width:3px; }
+  .chat-meta::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); }
+  .meta-card { background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px;flex-shrink:0; }
+  .meta-ttl { font-family:'Syne',sans-serif;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px; }
+  .meta-ln { display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;gap:8px; }
+  .meta-ln:last-child { border-bottom:none; }
+  .meta-k { color:var(--muted);flex-shrink:0; }
+  .meta-v { color:var(--text);font-weight:500;text-align:right;word-break:break-all; }
+  .meta-v.pos { color:var(--green); }
+
+  /* ── SLIDE 5 ── */
+  #slide-5 { justify-content:center;align-items:flex-start; }
+  #slide-5 .gl1 { width:800px;height:800px;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%);top:-200px;right:-200px; }
+  #slide-5 .gl2 { width:500px;height:500px;background:radial-gradient(circle,rgba(16,185,129,0.1) 0%,transparent 70%);bottom:-100px;left:100px; }
+  .cl-tag { display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid rgba(16,185,129,0.4);border-radius:100px;font-size:11px;color:var(--green);letter-spacing:2px;text-transform:uppercase;font-family:'Syne',sans-serif;margin-bottom:26px;position:relative;z-index:1; }
+  .cl-title { font-family:'Syne',sans-serif;font-size:clamp(34px,4.2vw,62px);font-weight:800;line-height:1.1;margin-bottom:18px;position:relative;z-index:1; }
+  .hlg { background:linear-gradient(135deg,var(--green),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+  .cl-text { font-size:15px;color:var(--muted);font-weight:300;line-height:1.7;max-width:520px;margin-bottom:36px;position:relative;z-index:1; }
+  .next-steps { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:660px;position:relative;z-index:1; }
+  .ns { background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px; }
+  .ns-n { font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:5px;opacity:0.32; }
+  .ns-t { font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:4px; }
+  .ns-d { font-size:11px;color:var(--muted);line-height:1.5; }
+  .cl-badge { position:absolute;bottom:64px;right:72px;display:flex;align-items:center;gap:10px;z-index:1; }
+  .cl-logo { font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="kbd-hint">← → para navegar</div>
+
+<div class="slides-container">
+<div class="slides" id="slides">
+
+<!-- SLIDE 0: CAPA -->
+<div class="slide" id="slide-0">
+  <div class="bg-glow gl1"></div>
+  <div class="bg-glow gl2"></div>
+  <div class="slide-number">01 / 06</div>
+  <div class="cover-tag"><span class="ctdot"></span>Projeto de IA · PUC Goiás</div>
+  <h1 class="cover-title"><span class="hl">CORA</span><br>Assistente Virtual<br>para Pós-Graduação</h1>
+  <p class="cover-sub">Automação inteligente de captação de leads via WhatsApp — da descoberta do curso até a inscrição, em uma única conversa.</p>
+  <div class="cover-stats">
+    <div><div class="cs-num">140</div><div class="cs-lbl">Conversas analisadas</div></div>
+    <div class="divider"></div>
+    <div><div class="cs-num">87</div><div class="cs-lbl">Leads capturados</div></div>
+    <div class="divider"></div>
+    <div><div class="cs-num">62%</div><div class="cs-lbl">Taxa de captura</div></div>
+    <div class="divider"></div>
+    <div><div class="cs-num">33</div><div class="cs-lbl">Conversões diretas</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 1: DASHBOARD -->
+<div class="slide" id="slide-1">
+  <div class="bg-glow"></div>
+  <div class="slide-number">02 / 06</div>
+  <div class="slide-header">
+    <div class="slide-label">Dashboard Geral</div>
+    <h2 class="slide-title">Métricas <span>Chave</span> do Projeto</h2>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card bl">
+      <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="kpi-val">140</div><div class="kpi-lbl">Sessões de conversa</div><div class="kpi-sub">Usuários únicos atendidos</div>
+    </div>
+    <div class="kpi-card gr">
+      <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="kpi-val">87</div><div class="kpi-lbl">Leads qualificados</div><div class="kpi-sub">Nome + e-mail coletados</div>
+    </div>
+    <div class="kpi-card go">
+      <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="kpi-val">33</div><div class="kpi-lbl">Conversões diretas</div><div class="kpi-sub">Link de inscrição enviado</div>
+    </div>
+    <div class="kpi-card pu">
+      <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+      <div class="kpi-val">38%</div><div class="kpi-lbl">Taxa de conversão</div><div class="kpi-sub">Leads para inscrição</div>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Cursos com Maior Interesse</div>
+      <div class="bar-chart">
+        <div class="bar-row"><div class="bar-label">Psicopedagogia</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">87</div></div>
+        <div class="bar-row"><div class="bar-label">Educação Especial</div><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><div class="bar-val">16</div></div>
+        <div class="bar-row"><div class="bar-label">Psicologia Jurídica</div><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><div class="bar-val">15</div></div>
+        <div class="bar-row"><div class="bar-label">Branding e Estratégia</div><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><div class="bar-val">9</div></div>
+        <div class="bar-row"><div class="bar-label">Direito Empresarial</div><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><div class="bar-val">7</div></div>
+        <div class="bar-row"><div class="bar-label">Ciências Criminais</div><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><div class="bar-val">7</div></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Funil de Engajamento</div>
+      <div style="display:flex;flex-direction:column;gap:7px;padding-top:4px">
+        <div class="fs f1" style="width:100%"><span style="font-size:11px">Contatos iniciados</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);font-size:13px">140</span></div>
+        <div class="fs f2" style="width:87%"><span style="font-size:11px">Leads capturados</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--cyan);font-size:13px">87</span></div>
+        <div class="fs f3" style="width:66%"><span style="font-size:11px">Interesse em curso</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--green);font-size:13px">62</span></div>
+        <div class="fs f4" style="width:44%"><span style="font-size:11px">Convertidos</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);font-size:13px">33</span></div>
+      </div>
+      <div style="margin-top:12px;font-size:10px;color:var(--muted);text-align:center;line-height:1.5">62% taxa de captura de lead<br>acima da média de chatbots educacionais</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: FUNCIONALIDADES -->
+<div class="slide" id="slide-2">
+  <div class="bg-glow"></div>
+  <div class="slide-number">03 / 06</div>
+  <div class="slide-header">
+    <div class="slide-label">Tecnologia</div>
+    <h2 class="slide-title">O que a <span>CORA</span> faz</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="fi-wrap fi-bl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="feat-name">Atendimento Autônomo 24/7</div>
+      <div class="feat-desc">Responde instantaneamente a qualquer horário via WhatsApp, sem intervenção humana, com linguagem natural e empática.</div>
+      <div class="feat-tag">Sempre ativo</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap fi-gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="feat-name">Captação Inteligente de Leads</div>
+      <div class="feat-desc">Coleta nome e e-mail de forma fluida na conversa, com validação em tempo real dos dados fornecidos.</div>
+      <div class="feat-tag">62% de conversão</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap fi-go"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+      <div class="feat-name">Apresentação de 29 Cursos</div>
+      <div class="feat-desc">Apresenta detalhes completos de todos os cursos de pós: carga horária, formato, módulos e diferenciais.</div>
+      <div class="feat-tag">Base completa</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap fi-cy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <div class="feat-name">Recomendação por Perfil</div>
+      <div class="feat-desc">Identifica o interesse do usuário — mesmo vagamente descrito — e sugere o curso mais adequado ao perfil.</div>
+      <div class="feat-tag">IA contextual</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap fi-pu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="feat-name">Qualificação e Conversão</div>
+      <div class="feat-desc">Conduz o lead pelo funil até o envio do link de inscrição, com técnicas consultivas e follow-up automático.</div>
+      <div class="feat-tag">38% de conversão</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap fi-pk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8M8 14h4"/></svg></div>
+      <div class="feat-name">Tratamento de Objeções</div>
+      <div class="feat-desc">Lida com dúvidas sobre valores, distância e formato — mantendo o usuário engajado na conversa.</div>
+      <div class="feat-tag">Resiliência conversacional</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: RESULTADOS -->
+<div class="slide" id="slide-3">
+  <div class="slide-number">04 / 06</div>
+  <div class="slide-header">
+    <div class="slide-label">Análise de Performance</div>
+    <h2 class="slide-title">Resultados em <span>Destaque</span></h2>
+  </div>
+  <div class="results-layout">
+    <div class="result-block feat">
+      <div class="rb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Qualidade das Conversas<span class="badge bg-gr">Excelente</span></div>
+      <div class="m-row"><span class="m-name">Media de mensagens por sessão</span><span class="m-val acc">12.8</span></div>
+      <div class="m-row"><span class="m-name">Conversas com 20+ mensagens</span><span class="m-val acc">28%</span></div>
+      <div class="m-row"><span class="m-name">Maior conversa registrada</span><span class="m-val good">50 msgs</span></div>
+      <div class="m-row"><span class="m-name">Leads com nome + email</span><span class="m-val good">87 / 140</span></div>
+      <div class="m-row"><span class="m-name">Cursos diferentes citados</span><span class="m-val acc">18+</span></div>
+    </div>
+    <div class="result-block">
+      <div class="rb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Funil de Conversão<span class="badge bg-bl">Por etapa</span></div>
+      <div class="fv">
+        <div class="fs f1" style="width:100%;display:flex;justify-content:space-between"><span style="font-size:11px">Contatos iniciados</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">140 — 100%</span></div>
+        <div style="text-align:center;font-size:12px;color:var(--muted)">↓</div>
+        <div class="fs f2" style="width:87%;display:flex;justify-content:space-between"><span style="font-size:11px">Leads capturados</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--cyan)">87 — 62%</span></div>
+        <div style="text-align:center;font-size:12px;color:var(--muted)">↓</div>
+        <div class="fs f3" style="width:66%;display:flex;justify-content:space-between"><span style="font-size:11px">Interesse em curso</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--green)">62 — 44%</span></div>
+        <div style="text-align:center;font-size:12px;color:var(--muted)">↓</div>
+        <div class="fs f4" style="width:44%;display:flex;justify-content:space-between"><span style="font-size:11px">Link de inscrição</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold)">33 — 24%</span></div>
+      </div>
+    </div>
+    <div class="result-block">
+      <div class="rb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Pontos Fortes da IA</div>
+      <div class="ins-list">
+        <div class="ins-item"><div class="ins-dot"></div><span>Valida e-mails inválidos em tempo real, garantindo qualidade dos leads</span></div>
+        <div class="ins-item"><div class="ins-dot"></div><span>Reconhece interesse difuso e sugere o curso mais adequado ao perfil</span></div>
+        <div class="ins-item"><div class="ins-dot"></div><span>Mantém usuários hesitantes no funil com respostas empáticas</span></div>
+        <div class="ins-item"><div class="ins-dot"></div><span>Personaliza toda a conversa usando o nome do lead desde o início</span></div>
+        <div class="ins-item"><div class="ins-dot"></div><span>Contorna objeções de distância e preço sem perder o lead</span></div>
+      </div>
+    </div>
+    <div class="result-block">
+      <div class="rb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Período Analisado</div>
+      <div class="m-row"><span class="m-name">Início das conversas</span><span class="m-val">Fev / 2026</span></div>
+      <div class="m-row"><span class="m-name">Última conversa</span><span class="m-val">Mar / 2026</span></div>
+      <div class="m-row"><span class="m-name">Cursos ofertados</span><span class="m-val">29 cursos</span></div>
+      <div class="m-row"><span class="m-name">Canal de atendimento</span><span class="m-val good">WhatsApp</span></div>
+      <div class="m-row"><span class="m-name">Modelo de IA</span><span class="m-val acc">LLM + Agente</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: WHATSAPP -->
+<div class="slide" id="slide-4">
+  <div class="bg-glow"></div>
+  <div class="slide-number" style="top:44px;right:48px">05 / 06</div>
+  <div style="position:relative;z-index:1;margin-bottom:14px;flex-shrink:0">
+    <div class="slide-label">Conversas Reais</div>
+    <h2 class="slide-title" style="font-size:26px">Interface <span>CORA</span> — WhatsApp</h2>
+  </div>
+  <div class="chat-panel">
+    <div class="chat-sel-row">
+      <button class="chat-sel-btn active" onclick="selectChat(0,this)">
+        <div class="csb-name">Marcia Moraes</div>
+        <div class="csb-course">Educação Especial · 50 mensagens · Convertida</div>
+      </button>
+      <button class="chat-sel-btn" onclick="selectChat(1,this)">
+        <div class="csb-name">Ricardina Rodrigues</div>
+        <div class="csb-course">Psicopedagogia · 16 mensagens · IA envia telefone</div>
+      </button>
+    </div>
+    <div class="chat-phone">
+      <div class="chat-hdr">
+        <div class="chat-av"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div><div class="chat-nm">CORA · PUC Goiás</div><div class="chat-st">online</div></div>
+        <div class="chat-ondot"></div>
+      </div>
+      <div class="chat-body" id="chatBody"></div>
+    </div>
+  </div>
+  <div class="chat-meta">
+    <div class="meta-card">
+      <div class="meta-ttl">Dados do Lead</div>
+      <div class="meta-ln"><span class="meta-k">Nome</span><span class="meta-v" id="metaName"></span></div>
+      <div class="meta-ln"><span class="meta-k">E-mail</span><span class="meta-v" id="metaEmail"></span></div>
+      <div class="meta-ln"><span class="meta-k">Curso</span><span class="meta-v pos" id="metaCurso"></span></div>
+      <div class="meta-ln"><span class="meta-k">Mensagens</span><span class="meta-v" id="metaMsgs"></span></div>
+      <div class="meta-ln"><span class="meta-k">Convertida</span><span class="meta-v pos" id="metaConv"></span></div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-ttl">Insights</div>
+      <div class="ins-list" id="insightList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: ENCERRAMENTO -->
+<div class="slide" id="slide-5">
+  <div class="bg-glow gl1"></div>
+  <div class="bg-glow gl2"></div>
+  <div class="slide-number">06 / 06</div>
+  <div class="cl-tag">Proximos Passos</div>
+  <h2 class="cl-title">IA que<br><span class="hlg">converte,</span><br>escala e aprende.</h2>
+  <p class="cl-text">A CORA provou sua capacidade de atender, qualificar e converter leads de pós-graduação de forma autônoma. O próximo passo é expandir o alcance e refinar a inteligência.</p>
+  <div class="next-steps">
+    <div class="ns"><div class="ns-n">01</div><div class="ns-t">Expansão de Canais</div><div class="ns-d">Integração com Instagram, site e portais de busca — mesma IA, múltiplos pontos de contato.</div></div>
+    <div class="ns"><div class="ns-n">02</div><div class="ns-t">Refinamento do Funil</div><div class="ns-d">Treinamento contínuo com base nas conversas reais para aumentar a taxa de conversão acima de 40%.</div></div>
+    <div class="ns"><div class="ns-n">03</div><div class="ns-t">Analytics Avançado</div><div class="ns-d">Dashboard em tempo real com análise de sentimento, intenção de compra e predição de churn.</div></div>
+  </div>
+  <div class="cl-badge">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    <div><div class="cl-logo">PUC Goiás</div><div style="font-size:10px;color:rgba(122,140,176,0.4)">Projeto de Inteligência Artificial</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn" onclick="prevSlide()">&#8592;</button>
+  <div class="dot active" onclick="goTo(0)"></div>
+  <div class="dot" onclick="goTo(1)"></div>
+  <div class="dot" onclick="goTo(2)"></div>
+  <div class="dot" onclick="goTo(3)"></div>
+  <div class="dot" onclick="goTo(4)"></div>
+  <div class="dot" onclick="goTo(5)"></div>
+  <button class="nav-btn" onclick="nextSlide()">&#8594;</button>
+</div>
+
+<script>
+let current = 0;
+const total = 6;
+
+function goTo(n) {
+  current = Math.max(0, Math.min(total - 1, n));
+  document.getElementById('slides').style.transform = 'translateX(-' + (current * 100) + 'vw)';
+  document.querySelectorAll('.dot').forEach(function(d, i) { d.classList.toggle('active', i === current); });
+  if (current === 4) renderChat(activeChat);
+}
+function nextSlide() { goTo(current + 1); }
+function prevSlide() { goTo(current - 1); }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+});
+
+var chats = [
+  {
+    name: 'Marcia Aparecida Campos Moraes',
+    email: 'marciacampos41@gmail.com',
+    curso: 'Educação Especial e Inclusiva',
+    msgs: '50 mensagens',
+    conv: 'Sim',
+    messages: [
+      {t:'h', tx:'Boa tarde'},
+      {t:'a', tx:'Olá! Sou a CORA, assistente virtual da PUC Goiás.\nEstou aqui para te ajudar com informações sobre nossa pós-graduação.\nQual é o seu nome completo?'},
+      {t:'h', tx:'Gostaria de saber quando virão abrir turma de mestrado na área de educação.'},
+      {t:'a', tx:'Qual é o seu nome completo para eu te ajudar melhor?'},
+      {t:'h', tx:'Marcia Aparecida Campos Moraes'},
+      {t:'a', tx:'Qual é o seu melhor e-mail, Marcia? Por favor, envie com @ e .com.'},
+      {t:'h', tx:'marciacampos41@gmail.com'},
+      {t:'a', tx:'Obrigada, Marcia! Sobre o mestrado em Educação, ainda não temos turmas abertas este ano.\nPosso sugerir opções como Educação Especial e Inclusiva. Gostaria de saber mais?'},
+      {t:'h', tx:'Educação especial.'},
+      {t:'a', tx:'O curso de Educação Especial e Inclusiva é presencial, com 360h de carga horária.\nOs módulos vão desde inclusão e diversidade até estratégias para diferentes deficiências. Faz sentido?'},
+      {t:'h', tx:'Sim. É toda sexta e sábado ou é quinzenal?'},
+      {t:'a', tx:'É presencial, toda sexta-feira das 19h às 22h e sábado das 8h às 11h — não é quinzenal.\nCarga horária total: 360h (267h presenciais + 93h online). Posso enviar o link para garantir sua vaga?'},
+      {t:'h', tx:'O que é necessário para entrar? Quando inicia? Qual o valor?'},
+      {t:'a', tx:'O curso tem 267h presenciais e 93h online, com TCC ao final.\nPara se inscrever, basta acessar nossa plataforma. Posso enviar o link agora?'},
+      {t:'h', tx:'Sim.'},
+      {t:'a', tx:'Para garantir sua vaga, acesse:\nhttps://pucgoinscricao.crmeducacional.com/login/10008\nQualquer dúvida, estou aqui.'},
+      {t:'h', tx:'Moro no interior de Goiás. Será um desafio voltar a estudar depois de 22 anos.'},
+      {t:'a', tx:'Entendo, Marcia. A PUC Goiás oferece 93h online no curso, o que facilita bastante para quem mora fora da capital.\nNosso corpo docente é preparado para apoiar nessa retomada.'},
+      {t:'h', tx:'Importante saber disso.'},
+      {t:'a', tx:'Estamos aqui para facilitar sua volta aos estudos com todo suporte e flexibilidade.\nPosso ajudar com mais alguma informação?'},
+    ],
+    insights: [
+      'Lead com 2 pós-graduações — perfil altamente qualificado',
+      'Mora no interior: CORA contornou objeção de distância com argumento de aulas online',
+      'Conversa personalizada após lead compartilhar 26 anos de docência em Biologia',
+      'Link de inscrição enviado 2x — usuária pediu novamente após esclarecer dúvidas',
+    ]
+  },
+  {
+    name: 'Ricardina Rodrigues Sampaio de Pinho',
+    email: 'ricardasampaio83@gmail.com',
+    curso: 'Psicopedagogia',
+    msgs: '16 mensagens',
+    conv: 'Não',
+    messages: [
+      {t:'h', tx:'Quero saber sobre valores'},
+      {t:'a', tx:'Olá! Para te ajudar melhor, qual é o seu nome completo?'},
+      {t:'h', tx:'Ricardina'},
+      {t:'a', tx:'Para finalizar seu cadastro, preciso do seu nome completo, por favor.'},
+      {t:'h', tx:'Ricardina Rodrigues Sampaio de Pinho'},
+      {t:'a', tx:'Ótimo, Ricardina! Agora me informe seu melhor e-mail com @ e .com.'},
+      {t:'h', tx:'ricardasampaio83@gmail.com'},
+      {t:'a', tx:'Ricardina, para te enviar os valores certinhos, qual curso de pós-graduação você tem interesse?\nSe preferir, posso listar todos os cursos disponíveis.'},
+      {t:'h', tx:'Psicopedagogia'},
+      {t:'a', tx:'O curso de Psicopedagogia é semipresencial, com 640h divididas entre aulas presenciais, online síncronas e atividades assíncronas. Tem duração de 18 meses com aulas à noite e sábados.\n\nSobre valores, nossa equipe pode apresentar as melhores condições após seu cadastro. Quer continuar?'},
+      {t:'h', tx:'Pensei que era totalmente online'},
+      {t:'a', tx:'O curso é semipresencial — combina momentos presenciais com atividades online. Isso permite flexibilidade e contato direto com os professores, o que enriquece muito o aprendizado. Você ainda tem interesse?'},
+      {t:'h', tx:'O polo presencial fica aonde?'},
+      {t:'a', tx:'O polo fica na PUC Goiás, em Goiânia. As aulas presenciais são às terças, quintas e sábados. Quer que eu passe o contato da coordenação para mais detalhes?'},
+      {t:'h', tx:'Sim'},
+      {t:'a', tx:'O contato da coordenadora do curso de Psicopedagogia é a Profa. Dra. Liliane, pelo telefone (62) 98141-1116. Quer mais alguma informação sobre o curso?'},
+      {t:'h', tx:'Obrigada, vou entrar em contato com ela.'},
+      {t:'a', tx:'Ótimo, Ricardina! Qualquer dúvida adicional, estou por aqui. Boa sorte e espero te ver em breve na PUC Goiás!'},
+    ],
+    insights: [
+      'Lead perguntou sobre valores logo no início — perfil de decisão rápida',
+      'Objeção de formato: achava que era 100% online — CORA explicou o modelo híbrido',
+      'CORA forneceu contato direto da coordenadora quando solicitado, demonstrando suporte real',
+      'Lead saiu para confirmar polo presencial — conversa bem qualificada mesmo sem conversão imediata',
+    ]
+  }
+];
+
+var activeChat = 0;
+var renderTimer = null;
+
+function renderChat(idx) {
+  var chat = chats[idx];
+  var body = document.getElementById('chatBody');
+  body.innerHTML = '';
+  if (renderTimer) { clearTimeout(renderTimer); }
+
+  document.getElementById('metaName').textContent = chat.name;
+  document.getElementById('metaEmail').textContent = chat.email;
+  document.getElementById('metaCurso').textContent = chat.curso;
+  document.getElementById('metaMsgs').textContent = chat.msgs;
+  document.getElementById('metaConv').textContent = chat.conv;
+
+  var il = document.getElementById('insightList');
+  il.innerHTML = chat.insights.map(function(ins) {
+    return '<div class="ins-item"><div class="ins-dot"></div><span>' + ins + '</span></div>';
+  }).join('');
+
+  chat.messages.forEach(function(m, i) {
+    setTimeout(function() {
+      var div = document.createElement('div');
+      div.className = 'msg ' + (m.t === 'a' ? 'msg-a' : 'msg-h');
+      var lines = m.tx.split('\n').map(function(l){ return l; }).join('<br>');
+      if (m.t === 'a') {
+        div.innerHTML = '<div class="msg-sndr">CORA</div>' + lines + '<div class="msg-time">' + getTime(i) + '</div>';
+      } else {
+        div.innerHTML = lines + '<div class="msg-time">' + getTime(i) + '</div>';
+      }
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }, i * 80);
+  });
+}
+
+function getTime(idx) {
+  var base = 14 * 60 + 20 + idx * 3;
+  var h = Math.floor(base / 60) % 24;
+  var m = base % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+
+function selectChat(idx, btn) {
+  activeChat = idx;
+  document.querySelectorAll('.chat-sel-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderChat(idx);
+}
+
+renderChat(0);
+</script>
+</body>
+</html>
